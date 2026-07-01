@@ -19,13 +19,15 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> saveTask(Task task) async {
+  Future<int> saveTask(Task task) async {
     try {
       if (task.title.trim().isEmpty) {
         throw ArgumentError('Le titre est obligatoire');
       }
-      await _isar.writeTxn(() async {
-        await _isar.tasks.put(task);
+      return await _isar.writeTxn<int>(() async {
+        final id = await _isar.tasks.put(task);
+        task.id = id;
+        return id;
       });
     } catch (e, stack) {
       _log.e('saveTask failed', error: e, stackTrace: stack);
@@ -56,15 +58,15 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> toggleStatus(int id) async {
+  Future<int> toggleStatus(int id) async {
     try {
-      await _isar.writeTxn(() async {
+      return await _isar.writeTxn<int>(() async {
         final task = await _isar.tasks.get(id);
-        if (task != null) {
-          final updated = task.copyWith(isCompleted: !task.isCompleted);
-          await _isar.tasks.delete(id);
-          await _isar.tasks.put(updated);
-        }
+        if (task == null) return id;
+        final updated = task.copyWith(isCompleted: !task.isCompleted);
+        await _isar.tasks.delete(id);
+        final newId = await _isar.tasks.put(updated);
+        return newId;
       });
     } catch (e, stack) {
       _log.e('toggleStatus failed', error: e, stackTrace: stack);

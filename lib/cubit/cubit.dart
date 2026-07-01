@@ -37,6 +37,14 @@ class TaskCubit extends Cubit<TaskCubitState> {
     }
   }
 
+  Future<void> getTaskById(int id) async {
+    try {
+      await _repository.getTaskById(id);
+    } catch (e) {
+      emit(TaskFailureState(message: e.toString()));
+    }
+  }
+
   Future<void> toggleStatus(int id) async {
     try {
       await _repository.toggleStatus(id);

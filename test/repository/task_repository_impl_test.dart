@@ -127,12 +127,12 @@ void main() {
     });
 
     group('toggleStatus', () {
-      test('happy path — creates a new instance with toggled status', () async {
+      test('happy path — creates new task with toggled status', () async {
         final task = Task(title: 'Apprendre Flutter');
         await repository.saveTask(task);
         final originalId = task.id;
 
-        await repository.toggleStatus(originalId);
+        final newId = await repository.toggleStatus(originalId);
 
         final oldTask = await repository.getTaskById(originalId);
         expect(oldTask, isNull);
@@ -141,7 +141,8 @@ void main() {
         expect(all.length, 1);
         expect(all.first.title, 'Apprendre Flutter');
         expect(all.first.isCompleted, true);
-        expect(all.first.id, isNot(originalId));
+        expect(all.first.id, newId);
+        expect(newId, isNot(originalId));
       });
 
       test('edge case — toggling non-existent id does not throw', () async {

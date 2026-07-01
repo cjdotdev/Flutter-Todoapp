@@ -36,14 +36,15 @@ class _AddTaskPopupState extends State<AddTaskPopup> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_isTitleValid) return;
     final title = _titleCtr.text.trim();
     final desc = _descCtr.text.trim();
-    context.read<TaskCubit>().saveTask(
+    final navigator = Navigator.of(context);
+    await context.read<TaskCubit>().saveTask(
           Task(title: title, description: desc.isEmpty ? null : desc),
         );
-    Navigator.pop(context);
+    navigator.pop();
   }
 
   @override

@@ -81,7 +81,7 @@ void main() {
       blocTest<TaskCubit, TaskCubitState>(
         'happy path — calls repo saveTask',
         build: () {
-          when(() => mockRepo.saveTask(any())).thenAnswer((_) async {});
+          when(() => mockRepo.saveTask(any())).thenAnswer((_) async => 1);
           return TaskCubit(mockRepo);
         },
         act: (cubit) => cubit.saveTask(Task(title: 'Test')),
@@ -103,6 +103,39 @@ void main() {
             (s) => s.message,
             'message',
             contains('DB down'),
+          ),
+        ],
+      );
+    });
+
+    group('getTaskById', () {
+      blocTest<TaskCubit, TaskCubitState>(
+        'happy path — calls repo getTaskById',
+        build: () {
+          when(() => mockRepo.getTaskById(any())).thenAnswer(
+            (_) async => Task(title: 'Trouvé'),
+          );
+          return TaskCubit(mockRepo);
+        },
+        act: (cubit) => cubit.getTaskById(1),
+        expect: () => [],
+        verify: (_) {
+          verify(() => mockRepo.getTaskById(1)).called(1);
+        },
+      );
+
+      blocTest<TaskCubit, TaskCubitState>(
+        'edge case — emits failure when repo throws',
+        build: () {
+          when(() => mockRepo.getTaskById(any())).thenThrow(Exception('DB error'));
+          return TaskCubit(mockRepo);
+        },
+        act: (cubit) => cubit.getTaskById(42),
+        expect: () => [
+          isA<TaskFailureState>().having(
+            (s) => s.message,
+            'message',
+            contains('DB error'),
           ),
         ],
       );
@@ -143,7 +176,7 @@ void main() {
       blocTest<TaskCubit, TaskCubitState>(
         'happy path — calls repo toggleStatus',
         build: () {
-          when(() => mockRepo.toggleStatus(any())).thenAnswer((_) async {});
+          when(() => mockRepo.toggleStatus(any())).thenAnswer((_) async => 1);
           return TaskCubit(mockRepo);
         },
         act: (cubit) => cubit.toggleStatus(1),
