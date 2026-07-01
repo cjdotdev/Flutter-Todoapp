@@ -27,9 +27,13 @@ jobs:
 
       - name: Symlink Isar native library
         run: |
-          ISAR_LIB=$(find / -name "libisar.so" 2>/dev/null | head -1)
-          if [ -n "$ISAR_LIB" ]; then
-            ln -sf "$ISAR_LIB" libisar.so
+          ISAR_DIR=$(python3 -c "import json; c=json.load(open('.dart_tool/package_config.json')); p=[p for p in c['packages'] if 'isar_community_flutter_libs' in p['name']][0]; print(p['rootUri'].replace('file://',''))")
+          if [ -n "$ISAR_DIR" ] && [ -f "$ISAR_DIR/linux/libisar.so" ]; then
+            ln -sf "$ISAR_DIR/linux/libisar.so" libisar.so
+            echo "Symlinked $ISAR_DIR/linux/libisar.so"
+          else
+            echo "libisar.so not found in package_config.json path"
+            find / -name "libisar.so" 2>/dev/null | head -1
           fi
 
       - run: flutter test
