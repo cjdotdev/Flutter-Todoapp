@@ -27,7 +27,7 @@ jobs:
 
       - name: Symlink Isar native library
         run: |
-          ISAR_LIB=$(find ~/.pub-cache -name "libisar.so" 2>/dev/null | head -1)
+          ISAR_LIB=$(find / -name "libisar.so" 2>/dev/null | head -1)
           if [ -n "$ISAR_LIB" ]; then
             ln -sf "$ISAR_LIB" libisar.so
           fi
