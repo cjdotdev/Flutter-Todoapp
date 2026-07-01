@@ -1,139 +1,139 @@
 # Flutter Todo App
 
-A Flutter todo application with offline-first architecture, local persistence via Isar, Firebase Firestore sync, Cubit state management, and a pink-accented UI inspired by Dribbble.
+Application Flutter de gestion de tâches avec architecture offline-first, base de données locale Isar, synchronisation Firestore, gestion d'état Cubit et thème rose inspiré de Dribbble.
 
-## Features
+## Fonctionnalités
 
-- Create, complete, and delete tasks
-- Tasks grouped by date with section headers ("Tasks - N", "Completed - M")
-- Detail view via bottom sheet (title, date, status, description)
-- Swipe-left to delete with `flutter_slidable` animation
-- Staggered list entry animations (`flutter_staggered_animations`)
-- Light/dark theme toggle via AppBar button
-- Pink accent theme with Poppins (headings) and Inter (body) fonts
-- Offline-first — fully functional without internet
-- Firebase Firestore sync when online
-- Error states shown as floating SnackBars
-- Real-time validation on task creation (disabled save button until title is non-empty)
+- Créer, compléter et supprimer des tâches
+- Tâches groupées par date avec en-têtes de section ("Tâches - N", "Terminées - M")
+- Vue détaillée en bottom sheet (titre, date, statut, description)
+- Balayer vers la gauche pour supprimer avec animation `flutter_slidable`
+- Animations d'entrée staggered (`flutter_staggered_animations`)
+- Basculer thème clair/sombre via le bouton dans l'AppBar
+- Thème rose avec polices Poppins (titres) et Inter (corps)
+- Entièrement fonctionnel hors ligne
+- Synchronisation Firebase Firestore en ligne
+- Erreurs affichées en SnackBar flottante
+- Validation en temps réel à la création (bouton désactivé tant que le titre est vide)
 
 ## Architecture
 
 ```
 lib/
 ├── cubit/          # TaskCubit + TaskCubitState (sealed class via Equatable)
-├── model/          # Task entity (Isar @collection with copyWith, props, dateFormatee)
-├── repository/     # TaskRepository (abstract interface) + 3 implementations
-│   ├── task_repository.dart          # Abstract interface
-│   ├── task_repository_impl.dart     # Isar local implementation
-│   ├── firestore_task_repository.dart # Firestore remote implementation
-│   └── sync_task_repository.dart     # Local-first sync wrapper
-├── screens/        # HomeScreen (BlocConsumer with date-grouped ListView)
-├── theme/          # AppColors, AppSizes, AppFonts, AppStyles, AppTheme (light + dark)
-├── utils/          # GetIt DI setup (setupLocator)
+├── model/          # Entité Task (Isar @collection avec copyWith, props, dateFormatee)
+├── repository/     # TaskRepository (interface abstraite) + 3 implémentations
+│   ├── task_repository.dart          # Interface abstraite
+│   ├── task_repository_impl.dart     # Implémentation locale Isar
+│   ├── firestore_task_repository.dart # Implémentation distante Firestore
+│   └── sync_task_repository.dart     # Wrapper de synchronisation local-first
+├── screens/        # HomeScreen (BlocConsumer avec ListView groupée par date)
+├── theme/          # AppColors, AppSizes, AppFonts, AppStyles, AppTheme (clair + sombre)
+├── utils/          # Configuration DI GetIt (setupLocator)
 └── widgets/        # TaskCard, AddTaskPopup, TaskDetailPopup, EmptyState
 ```
 
 ```
 test/
-├── repository/     # 10 tests — real Isar in-memory instance
+├── repository/     # 10 tests — instance Isar en mémoire réelle
 └── cubit/          # 10 tests — bloc_test + mocktail
 ```
 
-### Data Flow
+### Flux de données
 
 ```
 UI (BlocConsumer) → TaskCubit → SyncTaskRepository
-                                   ├── TaskRepositoryImpl (Isar — always)
-                                   └── FirestoreTaskRepository (if online)
+                                   ├── TaskRepositoryImpl (Isar — toujours)
+                                   └── FirestoreTaskRepository (si en ligne)
 ```
 
-- **State management:** flutter_bloc (Cubit via BlocProvider + BlocConsumer)
-- **Local DB:** isar_community (offline-first, stream-based reactive queries)
-- **Remote DB:** Cloud Firestore via `cloud_firestore`
-- **Sync strategy:** Write to Isar first (offline-safe), then Firestore if online. Errors from Firestore are silently caught — never block the user.
-- **DI:** get_it (all deps injected through locator)
-- **Toggle behavior:** `toggleStatus` deletes the old task and creates a new one (new Isar ID). Firestore handles this by deleting the old doc (by `isarId` lookup) and saving the new one.
+- **Gestion d'état :** flutter_bloc (Cubit via BlocProvider + BlocConsumer)
+- **BD locale :** isar_community (offline-first, requêtes réactives par stream)
+- **BD distante :** Cloud Firestore via `cloud_firestore`
+- **Stratégie de synchronisation :** Écriture d'abord dans Isar (sûr hors ligne), puis Firestore si en ligne. Les erreurs Firestore sont silencieusement ignorées — ne bloquent jamais l'utilisateur.
+- **DI :** get_it (toutes les dépendances injectées via le locator)
+- **Comportement toggle :** `toggleStatus` supprime l'ancienne tâche et en crée une nouvelle (nouvel ID Isar). Firestore supprime l'ancien doc (par `isarId`) et enregistre le nouveau.
 
-## Dependencies
+## Dépendances
 
-| Package | Version | Purpose |
+| Package | Version | Rôle |
 |---|---|---|
-| `isar_community` | ^3.3.2 | Local embedded database |
-| `isar_community_flutter_libs` | ^3.3.2 | Native Isar binaries |
-| `firebase_core` | ^4.11.0 | Firebase initialization |
-| `cloud_firestore` | ^6.6.0 | Remote Firestore database |
-| `flutter_bloc` | ^9.1.1 | State management (Cubit) |
-| `get_it` | ^9.2.1 | Dependency injection |
-| `connectivity_plus` | ^7.1.1 | Network status detection |
-| `flutter_slidable` | ^4.0.3 | Swipe-to-delete |
-| `flutter_staggered_animations` | ^1.1.1 | List entry animations |
-| `equatable` | ^2.0.8 | Value equality for states |
-| `intl` | ^0.20.2 | Date formatting |
-| `path_provider` | ^2.1.6 | App documents directory |
-| `logger` | ^2.7.0 | Structured logging |
+| `isar_community` | ^3.3.2 | Base de données locale embarquée |
+| `isar_community_flutter_libs` | ^3.3.2 | Binaires natifs Isar |
+| `firebase_core` | ^4.11.0 | Initialisation Firebase |
+| `cloud_firestore` | ^6.6.0 | Base de données distante Firestore |
+| `flutter_bloc` | ^9.1.1 | Gestion d'état (Cubit) |
+| `get_it` | ^9.2.1 | Injection de dépendances |
+| `connectivity_plus` | ^7.1.1 | Détection de connexion réseau |
+| `flutter_slidable` | ^4.0.3 | Balayer pour supprimer |
+| `flutter_staggered_animations` | ^1.1.1 | Animations d'entrée de liste |
+| `equatable` | ^2.0.8 | Égalité value pour les états |
+| `intl` | ^0.20.2 | Formatage de dates |
+| `path_provider` | ^2.1.6 | Répertoire des documents de l'app |
+| `logger` | ^2.7.0 | Journalisation structurée |
 
-## Getting Started
+## Premiers pas
 
 ```bash
-# Install dependencies
+# Installer les dépendances
 flutter pub get
 
-# Generate Isar code (required after model changes)
+# Générer le code Isar (nécessaire après modification du modèle)
 dart run build_runner build --delete-conflicting-outputs
 
-# Run the app
+# Lancer l'application
 flutter run
 ```
 
-### Firebase Setup
+### Configuration Firebase
 
-1. Add your `google-services.json` (Android) / `GoogleService-Info.plist` (iOS) to the project
-2. Enable Firestore in the Firebase Console
-3. The app initializes Firebase in `lib/main.dart` and connects automatically
+1. Ajoutez votre `google-services.json` (Android) / `GoogleService-Info.plist` (iOS) au projet
+2. Activez Firestore dans la console Firebase
+3. L'application initialise Firebase dans `lib/main.dart` et se connecte automatiquement
 
-### Running Tests
+### Exécuter les tests
 
 ```bash
-# Symlink Isar native library (required once)
+# Lier la bibliothèque native Isar (nécessaire une fois)
 ln -sf ~/.pub-cache/hosted/pub.dev/isar_community_flutter_libs-3.3.2/linux/libisar.so libisar.so
 
-# Run all tests
+# Lancer tous les tests
 flutter test
 ```
 
-The symlink is needed because Isar loads `libisar.so` via FFI at runtime. The repository tests open a real Isar in-memory instance; cubit tests use mocktail mocks.
+Le lien symbolique est nécessaire car Isar charge `libisar.so` via FFI au runtime. Les tests repository ouvrent une vraie instance Isar en mémoire ; les tests cubit utilisent des mocks mocktail.
 
 ## CI
 
-GitHub Actions (`.github/workflows/tests.yml`):
+GitHub Actions (`.github/workflows/tests.yml`) :
 
-- Triggered on push/PR to `main`
-- Steps: `pub get` → build_runner → `flutter analyze` → `flutter test`
-- All 20 tests must pass for CI to succeed
+- Déclenché sur push/PR vers `main`
+- Étapes : `pub get` → build_runner → `flutter analyze` → `flutter test`
+- Les 20 tests doivent réussir pour que la CI valide
 
 ## Tests
 
-| Suite | Count | Approach |
+| Suite | Nombre | Approche |
 |---|---|---|
-| Repository | 10 | Real Isar in-memory, covers save/delete/getById/watchAllTasks/toggleStatus with happy paths + edge cases |
-| Cubit | 10 | `bloc_test` + `mocktail`, covers all 5 public methods with happy paths + error cases |
+| Repository | 10 | Isar en mémoire réel, couvre save/delete/getById/watchAllTasks/toggleStatus avec chemins heureux + cas limites |
+| Cubit | 10 | `bloc_test` + `mocktail`, couvre les 5 méthodes publiques avec chemins heureux + cas d'erreur |
 
-## Theme
+## Thème
 
-All visual constants live in `lib/theme/`:
+Toutes les constantes visuelles sont dans `lib/theme/` :
 
-- **AppColors** — Pink accent (`#EC4899`), neutrals, semantic colors (success/error/warning)
-- **AppSizes** — Spacing scale (xs=4, sm=8, md=16, lg=24, xl=32, xxl=48) + radii + icon sizes
-- **AppFonts** — Poppins (headings) and Inter (body) with Regular/Medium/Bold weights
-- **AppStyles** — Pre-built TextStyle getters (headline, title, body, label) + common padding
-- **AppTheme** — `light` and `dark` ThemeData with Material 3, pink seed color, custom FAB/input/card themes
+- **AppColors** — Rose accent (`#EC4899`), neutres, couleurs sémantiques (succès/erreur/avertissement)
+- **AppSizes** — Échelle d'espacement (xs=4, sm=8, md=16, lg=24, xl=32, xxl=48) + rayons + tailles d'icônes
+- **AppFonts** — Poppins (titres) et Inter (corps) avec poids Regular/Medium/Bold
+- **AppStyles** — Getters TextStyle préconstruits (headline, title, body, label) + padding commun
+- **AppTheme** — `light` et `dark` ThemeData avec Material 3, couleur seed rose, thèmes personnalisés FAB/input/card
 
-## Key Design Decisions
+## Décisions de conception clés
 
-- `isar_community` fork used instead of upstream Isar for Dart 3.12 compatibility
-- `Task` model avoids `Equatable` inheritance (conflicts with Isar generator); manual `==`/`hashCode`
-- Cubit methods (`saveTask`, `deleteTask`, etc.) do NOT emit on success — the `watchAllTasks` stream subscription handles UI updates reactively
-- `SyncTaskRepository` writes to Isar first, then Firestore (offline-safe); Firestore errors are silently caught
-- `FirestoreTaskRepository` uses auto-generated doc IDs + an `isarId` field for lookups (decouples Firestore doc ID from Isar ID)
-- `toggleStatus` in Isar uses delete+put (new task instance, new ID); sync repo handles Firestore cleanup
-- Private constructors (`AppColors._()`) prevent instantiation of utility classes
+- Utilisation du fork `isar_community` au lieu d'Isar officiel pour la compatibilité Dart 3.12
+- Le modèle `Task` évite l'héritage `Equatable` (conflit avec le générateur Isar) ; `==`/`hashCode` manuels
+- Les méthodes du Cubit (`saveTask`, `deleteTask`, etc.) n'émettent PAS en cas de succès — l'abonnement au stream `watchAllTasks` gère les mises à jour UI de manière réactive
+- `SyncTaskRepository` écrit d'abord dans Isar, puis Firestore (sûr hors ligne) ; les erreurs Firestore sont silencieusement ignorées
+- `FirestoreTaskRepository` utilise des ID de doc auto-générés + un champ `isarId` pour les recherches (découple l'ID Firestore de l'ID Isar)
+- `toggleStatus` dans Isar utilise delete+put (nouvelle instance, nouvel ID) ; le repo sync gère le nettoyage Firestore
+- Constructeurs privés (`AppColors._()`) empêchent l'instanciation des classes utilitaires
